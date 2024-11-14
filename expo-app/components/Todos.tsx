@@ -2,7 +2,8 @@ import { NewTodo } from '@/components/NewTodo';
 import { TodoList } from '@/components/TodoList';
 import { generateId } from '@/core/generateId';
 import { Todo } from '@/core/keelClient';
-import { useState } from 'react';
+import { use$, useObservable } from '@legendapp/state/react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface TodosProps {
@@ -10,25 +11,27 @@ interface TodosProps {
 }
 
 export function Todos(props: TodosProps) {
-    const [todos, setTodos] = useState<Todo[]>([]);
+    const todos$ = useObservable<Todo[]>([]);
+    const todos = use$(todos$);
+
     const addTodo = (text: string) => {
-        setTodos([
-            ...todos,
-            {
-                id: generateId(),
-                text,
-                idUser: props.idUser,
-                completed: false,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            } as Todo,
-        ]);
+        todos$.push({
+            id: generateId(),
+            text,
+            idUser: props.idUser,
+            completed: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        } as Todo);
     };
     const updateTodo = (todo: Todo) => {
-        setTodos(todos.map((t) => (t.id === todo.id ? todo : t)));
+        const idx = todos$.peek().findIndex((t) => t.id === todo.id);
+        todos$[idx].set(todo);
     };
     const deleteTodo = (id: string) => {
-        setTodos(todos.filter((t) => t.id !== id));
+        // todos$.set(todos.filter((t) => t.id !== id));
+        const idx = todos$.peek().findIndex((t) => t.id === id);
+        todos$.splice(idx, 1);
     };
 
     console.log('1 - Todos');

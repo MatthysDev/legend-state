@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useObservable, use$ } from '@legendapp/state/react';
+import React from 'react';
 import { NativeSyntheticEvent, StyleSheet, TextInput, TextInputSubmitEditingEventData } from 'react-native';
 
 interface NewTodoProps {
@@ -6,9 +7,10 @@ interface NewTodoProps {
 }
 
 export const NewTodo = ({ addTodo }: NewTodoProps) => {
-    const [text, setText] = useState('');
+    const text$ = useObservable('');
+    const text = use$(text$);
     const handleSubmitEditing = ({ nativeEvent: { text } }: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
-        setText('');
+        text$.set('');
         addTodo(text);
     };
 
@@ -17,7 +19,7 @@ export const NewTodo = ({ addTodo }: NewTodoProps) => {
     return (
         <TextInput
             value={text}
-            onChangeText={(text) => setText(text)}
+            onChangeText={(text) => text$.set(text)}
             onSubmitEditing={handleSubmitEditing}
             placeholder="What do you want to do?"
             style={styles.input}
